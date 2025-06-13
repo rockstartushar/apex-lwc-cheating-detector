@@ -2,7 +2,7 @@ async function loginToGitlab() {
     const url = document.getElementById("gitlab-url").value;
     const token = document.getElementById("gitlab-token").value;
     const statusMsg = document.getElementById("login-status");
-
+    console.log("Logging in with URL:", url, "and Token:", token);
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -10,6 +10,7 @@ async function loginToGitlab() {
     });
 
     const result = await res.json();
+    console.log("Login result:", result);
     if (result.status === "success") {
       statusMsg.textContent = "";
       document.getElementById("login-section").style.display = "none";
