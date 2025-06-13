@@ -3,9 +3,7 @@ from backend.gitlab_utils import (
     init_gitlab_connection,
     get_trainees,
     get_branches,
-    get_files,
-    fetch_file_content,
-    get_gitlab
+    get_files
 )
 from backend.similarity_checker import compare_similarity
 
@@ -30,7 +28,7 @@ def login():
 def trainees():
     data = request.get_json()
     token = data.get("token")
-    gl = get_gitlab(token)
+    gl = ''
     if not gl:
         return jsonify({"error": "GitLab not initialized"}), 400
 
