@@ -2,3 +2,4 @@ flask
 python-gitlab 
 python-dotenv
 gunicorn
+flask_session
