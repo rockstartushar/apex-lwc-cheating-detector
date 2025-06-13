@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from backend.gitlab_utils import (
     init_gitlab_connection,
     get_trainees,
@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "🔍 Apex Code Similarity Checker is running!", 200
+    return render_template('index.html')
 
 
 @app.route("/api/login", methods=["POST"])
