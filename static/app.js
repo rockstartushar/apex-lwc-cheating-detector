@@ -47,7 +47,10 @@ const choices = new Choices(traineeSelect, {
 
 async function loadTrainees() {
   console.log("Fetching trainees...");
-  const res = await fetch("/api/trainees");
+  const res = await fetch("/api/trainees", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
   
   if (!res.ok) {
     const errorText = await res.text();
@@ -92,6 +95,7 @@ traineeSelect.addEventListener("change", async function () {
     }
 
     console.log("Fetching branches for project:", id);
+    
     const branches = await fetch(`/api/branches/${id}`).then((res) => res.json());
     console.log("Branches received for project", id, ":", branches);
 
@@ -117,7 +121,7 @@ traineeSelect.addEventListener("change", async function () {
     traineeDetailsDiv.appendChild(container);
 
     branchSelect.addEventListener("change", async function () {
-      const branchName = this.value;
+      const branchName = encodeURIComponent(this.value);
       const projectId = this.dataset.projectId;
       console.log(`Branch selected: ${branchName} for project ${projectId}`);
 
