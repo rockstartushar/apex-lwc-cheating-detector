@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cheating Detector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>🕵️ GitLab Cheating Detector</h1>
+    <div id="login-section">
+    <label for="gitlab-url">GitLab URL</label>
+    <input type="text" id="gitlab-url" placeholder="https://gitlab.com" />
+
+    <label for="gitlab-token">GitLab Private Token</label>
+    <input type="password" id="gitlab-token" placeholder="Your GitLab Token" />
+
+    <button class="btn" onclick="loginToGitlab()">Connect to GitLab</button>
+    <p id="login-status" style="color: red;"></p>
+  </div>
+    <div id="main-app" style="display: none;">
+
+    <label for="trainees">Select Trainees:</label>
+    <select id="trainees" multiple></select>
+
+    <div id="trainee-details" class="trainee-details"></div>
+
+    <button class="btn" onclick="compareNow()">Compare Selected Files</button>
+
+    <pre id="output" class="output-box"></pre>
+  </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

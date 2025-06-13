@@ -1,0 +1,13 @@
+{
+  "1867": {
+    "name": {
+      "name": "CE-2025-04-979-SANVARLAL",
+      "project_name": "Sanvarlal Jangid / CE-2025-04-979-SANVARLAL"
+    },
+    "Assignment": "Manual Selection",
+    "branch": "feature/apex-basic-assignment",
+    "files": [
+      "force-app/main/default/classes/ApexBasicsAssignment.cls"
+    ]
+  }
+}
