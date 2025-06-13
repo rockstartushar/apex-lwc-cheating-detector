@@ -1,8 +1,19 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   background: #f0f2f5;
   padding: 30px;
   margin: 0;
+  color: #333;
+}
+.header h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.highlight {
+  color: #007bff;
 }
 
 .container {
@@ -47,15 +58,25 @@ select, .btn {
 .btn {
   background: #007bff;
   color: white;
+  padding: 12px 24px;
   border: none;
-  padding: 12px 20px;
   border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
   transition: 0.3s ease-in-out;
 }
 
 .btn:hover {
   background: #0056b3;
+}
+
+.btn-compare {
+  margin-top: 10px;
+}
+
+.error-text {
+  color: #e74c3c;
+  margin-top: 10px;
 }
 
 pre.output-box {
@@ -118,5 +139,31 @@ pre.output-box {
   font-family: Consolas, monospace;
   font-size: 0.9rem;
   line-height: 1.4;
+}
+
+.card {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: #007bff;
+  outline: none;
 }
 
