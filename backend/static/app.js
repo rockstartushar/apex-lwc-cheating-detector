@@ -2,6 +2,7 @@ async function loginToGitlab() {
   const url = document.getElementById("gitlab-url").value;
   const token = document.getElementById("gitlab-token").value;
   const statusMsg = document.getElementById("login-status");
+
   console.log("Logging in with URL:", url, "and Token:", token);
 
   const res = await fetch("/api/login", {
@@ -10,11 +11,17 @@ async function loginToGitlab() {
     body: JSON.stringify({ url, token }),
   });
 
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Login failed:", errorText);
+    statusMsg.textContent = "Login failed. See console for details.";
+    return;
+  }
+
   const result = await res.json();
   console.log("Login result:", result);
 
   if (result.success === true) {
-    localStorage.setItem("gitlab_token", token); // Save token
     statusMsg.textContent = "";
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
@@ -40,13 +47,13 @@ const choices = new Choices(traineeSelect, {
 
 async function loadTrainees() {
   console.log("Fetching trainees...");
-  const token = localStorage.getItem("gitlab_token");
-
-  const res = await fetch("/api/trainees", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token }),
-  });
+  const res = await fetch("/api/trainees");
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Error loading trainees:", errorText);
+    return;
+  }
 
   const data = await res.json();
   traineeData = data;
@@ -85,9 +92,7 @@ traineeSelect.addEventListener("change", async function () {
     }
 
     console.log("Fetching branches for project:", id);
-    const branches = await fetch(`/api/branches/${id}`).then((res) =>
-      res.json()
-    );
+    const branches = await fetch(`/api/branches/${id}`).then((res) => res.json());
     console.log("Branches received for project", id, ":", branches);
 
     const branchSelect = document.createElement("select");
@@ -172,6 +177,12 @@ async function compareNow() {
     body: JSON.stringify(config),
   });
 
+  if (!response.ok) {
+    const err = await response.text();
+    console.error("Similarity comparison failed:", err);
+    return;
+  }
+
   const result = await response.json();
   console.log("Comparison result received:", result);
 
@@ -194,12 +205,10 @@ async function compareNow() {
       compareDiv.className = "code-compare";
 
       const code1 = document.createElement("div");
-      code1.innerHTML = `<h4>Code 1</h4><pre>${match.code1}</pre>`;
+      code1.innerHTML = `<h4>Code 1</h4><pre>${escapeHtml(match.code1)}</pre>`;
 
       const code2 = document.createElement("div");
-      code2.innerHTML = `<h4>Code 2</h4><pre>${match.code2}</pre>`;
-
-      console.log(`Match ${idx + 1} for pair ${entry.pair}:`, match);
+      code2.innerHTML = `<h4>Code 2</h4><pre>${escapeHtml(match.code2)}</pre>`;
 
       compareDiv.appendChild(code1);
       compareDiv.appendChild(code2);
