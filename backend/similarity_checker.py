@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from gitlab_utils import fetch_file_content, is_connected
+from backend.gitlab_utils import fetch_file_content, is_connected
 
 def compare_similarity(config):
     """
