@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from gitlab_utils import (
+from backend.gitlab_utils import (
     init_gitlab_connection,
     get_trainees,
     get_branches,
@@ -7,7 +7,7 @@ from gitlab_utils import (
     fetch_file_content,
     get_gitlab
 )
-from similarity_checker import compare_similarity
+from backend.similarity_checker import compare_similarity
 
 app = Flask(__name__)
 
