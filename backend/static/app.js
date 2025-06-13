@@ -13,7 +13,7 @@ async function loginToGitlab() {
   const result = await res.json();
   console.log("Login result:", result);
 
-  if (result.status === "success") {
+  if (result.success === true) {
     statusMsg.textContent = "";
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
