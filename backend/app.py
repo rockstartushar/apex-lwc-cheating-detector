@@ -8,6 +8,7 @@ from backend.gitlab_utils import (
 from backend.similarity_checker import compare_similarity
 
 app = Flask(__name__)
+gl = None  # Store the GitLab instance globally
 
 @app.route("/")
 def home():
@@ -16,45 +17,46 @@ def home():
 
 @app.route("/api/login", methods=["POST"])
 def login():
+    global gl
     data = request.get_json()
     url = data.get("url")
     token = data.get("token")
 
-    success, message = init_gitlab_connection(url, token)
+    success, message, connection = init_gitlab_connection(url, token)
+    if success:
+        gl = connection
+
     return jsonify({"success": success, "message": message})
 
 
 @app.route("/api/trainees", methods=["POST"])
 def trainees():
-    data = request.get_json()
-    token = data.get("token")
-    gl = ''
+    global gl
     if not gl:
         return jsonify({"error": "GitLab not initialized"}), 400
 
-    return jsonify(get_trainees(token))
+    return jsonify(get_trainees(gl))
 
 
-@app.route("/api/branches", methods=["POST"])
-def branches():
-    data = request.get_json()
-    token = data.get("token")
-    project_id = data.get("project_id")
+@app.route("/api/branches/<int:project_id>", methods=["GET"])
+def branches(project_id):
+    global gl
+    if not gl:
+        return jsonify({"error": "GitLab not initialized"}), 400
 
-    return jsonify(get_branches(token, project_id))
-
-
-@app.route("/api/files", methods=["POST"])
-def files():
-    data = request.get_json()
-    token = data.get("token")
-    project_id = data.get("project_id")
-    branch = data.get("branch")
-
-    return jsonify(get_files(token, project_id, branch))
+    return jsonify(get_branches(gl, project_id))
 
 
-@app.route("/api/similarity", methods=["POST"])
+@app.route("/api/files/<int:project_id>/<branch>", methods=["GET"])
+def files(project_id, branch):
+    global gl
+    if not gl:
+        return jsonify({"error": "GitLab not initialized"}), 400
+
+    return jsonify(get_files(gl, project_id, branch))
+
+
+@app.route("/api/save-config", methods=["POST"])
 def similarity():
     config = request.get_json()
     return jsonify(compare_similarity(config))

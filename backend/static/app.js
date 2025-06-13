@@ -14,6 +14,7 @@ async function loginToGitlab() {
   console.log("Login result:", result);
 
   if (result.success === true) {
+    localStorage.setItem("gitlab_token", token); // Save token
     statusMsg.textContent = "";
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
@@ -39,7 +40,14 @@ const choices = new Choices(traineeSelect, {
 
 async function loadTrainees() {
   console.log("Fetching trainees...");
-  const res = await fetch("/api/trainees");
+  const token = localStorage.getItem("gitlab_token");
+
+  const res = await fetch("/api/trainees", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+
   const data = await res.json();
   traineeData = data;
 
