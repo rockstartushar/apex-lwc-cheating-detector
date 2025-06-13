@@ -14,19 +14,28 @@ def compare_similarity(gl, config):
         for j in range(i + 1, len(items)):
             id2, data2 = items[j]
 
-            combined1 = []
-            combined2 = []
+            file_contents1 = []
+            file_contents2 = []
 
+            file_map1 = {}  # maps code offset to filename for project 1
+            file_map2 = {}  # maps code offset to filename for project 2
+
+            offset1 = 0
             for path in data1["files"]:
                 code = fetch_file_content(gl, int(id1), data1["branch"], path)
-                combined1.append(code)
+                file_contents1.append(code)
+                file_map1.update({i: path for i in range(offset1, offset1 + len(code))})
+                offset1 += len(code) + 1  # +1 for newline
 
+            offset2 = 0
             for path in data2["files"]:
                 code = fetch_file_content(gl, int(id2), data2["branch"], path)
-                combined2.append(code)
+                file_contents2.append(code)
+                file_map2.update({i: path for i in range(offset2, offset2 + len(code))})
+                offset2 += len(code) + 1
 
-            full1 = "\n".join(combined1)
-            full2 = "\n".join(combined2)
+            full1 = "\n".join(file_contents1)
+            full2 = "\n".join(file_contents2)
 
             matcher = SequenceMatcher(None, full1, full2)
             percent = round(matcher.ratio() * 100, 2)
@@ -41,8 +50,15 @@ def compare_similarity(gl, config):
                     snippet2 = full2[block.b:block.b + block.size].strip()
                     if snippet1 and snippet1 not in seen:
                         seen.add(snippet1)
+
+                        # get file names for each match
+                        file1 = file_map1.get(block.a, "unknown")
+                        file2 = file_map2.get(block.b, "unknown")
+
                         matches.append({
+                            "file1": file1,
                             "code1": snippet1,
+                            "file2": file2,
                             "code2": snippet2
                         })
 

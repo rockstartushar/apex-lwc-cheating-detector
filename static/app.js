@@ -51,7 +51,7 @@ async function loadTrainees() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
-  
+
   if (!res.ok) {
     const errorText = await res.text();
     console.error("Error loading trainees:", errorText);
@@ -95,8 +95,10 @@ traineeSelect.addEventListener("change", async function () {
     }
 
     console.log("Fetching branches for project:", id);
-    
-    const branches = await fetch(`/api/branches/${id}`).then((res) => res.json());
+
+    const branches = await fetch(`/api/branches/${id}`).then((res) =>
+      res.json()
+    );
     console.log("Branches received for project", id, ":", branches);
 
     const branchSelect = document.createElement("select");
@@ -128,7 +130,10 @@ traineeSelect.addEventListener("change", async function () {
       const files = await fetch(`/api/files/${projectId}/${branchName}`).then(
         (res) => res.json()
       );
-      console.log(`Files for project ${projectId} on branch ${branchName}:`, files);
+      console.log(
+        `Files for project ${projectId} on branch ${branchName}:`,
+        files
+      );
 
       const fileDiv = document.getElementById(`files-${projectId}`);
       fileDiv.innerHTML = files
@@ -209,10 +214,16 @@ async function compareNow() {
       compareDiv.className = "code-compare";
 
       const code1 = document.createElement("div");
-      code1.innerHTML = `<h4>Code 1</h4><pre>${escapeHtml(match.code1)}</pre>`;
+      code1.innerHTML = `
+  <h4>Code 1 (${match.file1})</h4>
+  <pre>${escapeHtml(match.code1)}</pre>
+`;
 
       const code2 = document.createElement("div");
-      code2.innerHTML = `<h4>Code 2</h4><pre>${escapeHtml(match.code2)}</pre>`;
+      code2.innerHTML = `
+  <h4>Code 2 (${match.file2})</h4>
+  <pre>${escapeHtml(match.code2)}</pre>
+`;
 
       compareDiv.appendChild(code1);
       compareDiv.appendChild(code2);
