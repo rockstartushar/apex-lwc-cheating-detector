@@ -1,4 +1,4 @@
-flask 
+flask
 python-gitlab 
 python-dotenv
 gunicorn

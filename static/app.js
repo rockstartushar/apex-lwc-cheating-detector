@@ -1,4 +1,13 @@
+function showSpinner() {
+  document.getElementById("spinner").style.display = "flex";
+}
+
+function hideSpinner() {
+  document.getElementById("spinner").style.display = "none";
+}
+
 async function loginToGitlab() {
+  showSpinner();
   const url = document.getElementById("gitlab-url").value;
   const token = document.getElementById("gitlab-token").value;
   const statusMsg = document.getElementById("login-status");
@@ -31,6 +40,7 @@ async function loginToGitlab() {
     statusMsg.textContent = result.message;
     console.log("Login failed:", result.message);
   }
+  hideSpinner();
 }
 
 const traineeSelect = document.getElementById("trainees");
@@ -46,6 +56,7 @@ const choices = new Choices(traineeSelect, {
 });
 
 async function loadTrainees() {
+  showSpinner();
   console.log("Fetching trainees...");
   const res = await fetch("/api/trainees", {
     method: "POST",
@@ -60,7 +71,6 @@ async function loadTrainees() {
 
   const data = await res.json();
   traineeData = data;
-
   console.log("Trainees fetched:", data);
 
   const traineeOptions = Object.entries(data).map(([id, obj]) => ({
@@ -70,9 +80,11 @@ async function loadTrainees() {
 
   choices.setChoices(traineeOptions, "value", "label", true);
   console.log("Trainee options set in Choices");
+  hideSpinner();
 }
 
 traineeSelect.addEventListener("change", async function () {
+  showSpinner();
   const selectedIds = Array.from(traineeSelect.selectedOptions).map(
     (opt) => opt.value
   );
@@ -100,6 +112,7 @@ traineeSelect.addEventListener("change", async function () {
       res.json()
     );
     console.log("Branches received for project", id, ":", branches);
+    hideSpinner();
 
     const branchSelect = document.createElement("select");
     branchSelect.name = `branch-${id}`;
@@ -123,6 +136,7 @@ traineeSelect.addEventListener("change", async function () {
     traineeDetailsDiv.appendChild(container);
 
     branchSelect.addEventListener("change", async function () {
+      showSpinner();
       const branchName = encodeURIComponent(this.value);
       const projectId = this.dataset.projectId;
       console.log(`Branch selected: ${branchName} for project ${projectId}`);
@@ -146,97 +160,140 @@ traineeSelect.addEventListener("change", async function () {
         `
         )
         .join("");
+        hideSpinner();
     });
   }
 });
 
 async function compareNow() {
-  console.log("Starting comparison...");
-  const selectedIds = Array.from(traineeSelect.selectedOptions).map(
-    (opt) => opt.value
-  );
-  console.log("Selected trainee IDs for comparison:", selectedIds);
+  showSpinner();
+  try {
+    const selectedIds = Array.from(traineeSelect.selectedOptions).map(
+      (opt) => opt.value
+    );
+    console.log("Selected trainee IDs for comparison:", selectedIds);
 
-  const config = {};
+    const config = {};
 
-  for (const id of selectedIds) {
-    const branch = document.querySelector(`select[name="branch-${id}"]`)?.value;
-    const files = Array.from(
-      document.querySelectorAll(`input[name="file-${id}"]:checked`)
-    ).map((input) => input.value);
+    for (const id of selectedIds) {
+      const branch = document.querySelector(`select[name="branch-${id}"]`)?.value;
+      const files = Array.from(
+        document.querySelectorAll(`input[name="file-${id}"]:checked`)
+      ).map((input) => input.value);
 
-    if (branch && files.length) {
-      config[id] = {
-        name: traineeData[id],
-        Assignment: "Manual Selection",
-        branch: branch,
-        files: files,
-      };
-      console.log(`Config set for project ${id}:`, config[id]);
-    } else {
-      console.warn(`Skipping project ${id} due to missing branch or files.`);
+      if (branch && files.length) {
+        config[id] = {
+          name: traineeData[id],
+          Assignment: "Manual Selection",
+          branch: branch,
+          files: files,
+        };
+        console.log(`Config set for project ${id}:`, config[id]);
+      } else {
+        console.warn(`Skipping project ${id} due to missing branch or files.`);
+      }
     }
-  }
 
-  console.log("Final config to send:", config);
+    console.log("Final config to send:", config);
 
-  const response = await fetch("/api/save-config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(config),
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    console.error("Similarity comparison failed:", err);
-    return;
-  }
-
-  const result = await response.json();
-  console.log("Comparison result received:", result);
-
-  outputPre.innerHTML = "";
-
-  result.forEach((entry) => {
-    const block = document.createElement("div");
-    block.className = "result-block";
-
-    const heading = document.createElement("h3");
-    heading.textContent = entry.pair;
-    block.appendChild(heading);
-
-    const percent = document.createElement("p");
-    percent.textContent = `Similarity: ${entry.percentage}`;
-    block.appendChild(percent);
-
-    entry.matches.forEach((match, idx) => {
-      const compareDiv = document.createElement("div");
-      compareDiv.className = "code-compare";
-
-      const code1 = document.createElement("div");
-      code1.innerHTML = `
-  <h4>Code 1 (${match.file1})</h4>
-  <pre>${escapeHtml(match.code1)}</pre>
-`;
-
-      const code2 = document.createElement("div");
-      code2.innerHTML = `
-  <h4>Code 2 (${match.file2})</h4>
-  <pre>${escapeHtml(match.code2)}</pre>
-`;
-
-      compareDiv.appendChild(code1);
-      compareDiv.appendChild(code2);
-      block.appendChild(compareDiv);
+    const response = await fetch("/api/save-config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
     });
 
-    outputPre.appendChild(block);
-  });
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("Similarity comparison failed:", err);
+      return;
+    }
+
+    const result = await response.json();
+    console.log("Comparison result received:", result);
+
+    outputPre.innerHTML = "";
+
+    // Build summary table
+    const summaryTable = document.createElement("table");
+    summaryTable.className = "summary-table";
+    summaryTable.innerHTML = `
+      <thead>
+        <tr>
+          <th>Project Pair</th>
+          <th>Similarity</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const summaryBody = summaryTable.querySelector("tbody");
+
+    result.forEach((entry, index) => {
+      const row = document.createElement("tr");
+      const id = `details-${index}`;
+
+      // Project Pair
+      const pairCell = document.createElement("td");
+      pairCell.textContent = entry.pair;
+
+      // Similarity %
+      const percentCell = document.createElement("td");
+      percentCell.textContent = entry.percentage;
+
+      // View Details Button
+      const viewCell = document.createElement("td");
+      const toggleBtn = document.createElement("button");
+      toggleBtn.textContent = "View Details ▼";
+      toggleBtn.onclick = () => {
+        const detailsDiv = document.getElementById(id);
+        const isVisible = detailsDiv.style.display === "block";
+        detailsDiv.style.display = isVisible ? "none" : "block";
+        toggleBtn.textContent = isVisible ? "View Details ▼" : "Hide Details ▲";
+      };
+      viewCell.appendChild(toggleBtn);
+
+      row.appendChild(pairCell);
+      row.appendChild(percentCell);
+      row.appendChild(viewCell);
+      summaryBody.appendChild(row);
+
+      // Code snippet details
+      const detailsDiv = document.createElement("div");
+      detailsDiv.id = id;
+      detailsDiv.style.display = "none";
+      detailsDiv.className = "details-block";
+
+      entry.matches.forEach((match, idx) => {
+        const compareDiv = document.createElement("div");
+        compareDiv.className = "code-compare";
+
+        const code1 = document.createElement("div");
+        code1.innerHTML = `<h4>${match.file1 || "Code 1"}</h4><pre>${escapeHtml(match.code1)}</pre>`;
+
+        const code2 = document.createElement("div");
+        code2.innerHTML = `<h4>${match.file2 || "Code 2"}</h4><pre>${escapeHtml(match.code2)}</pre>`;
+
+        compareDiv.appendChild(code1);
+        compareDiv.appendChild(code2);
+        detailsDiv.appendChild(compareDiv);
+      });
+
+      outputPre.appendChild(detailsDiv);
+    });
+
+    outputPre.prepend(summaryTable);
+  } catch (err) {
+    console.error("Error during comparison:", err);
+  } finally {
+    hideSpinner();
+  }
 }
+
+
 
 function escapeHtml(text) {
   const div = document.createElement("div");
-  div.innerText = text;
+  div.innerText = text || '';
   return div.innerHTML;
 }
 

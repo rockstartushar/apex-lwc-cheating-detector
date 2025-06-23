@@ -1,3 +1,6 @@
+
+# TODO: No files issue, Spinner, Comment remove, White space to remove, wrong percentage issue
+
 from flask import Flask, request, jsonify, render_template, session
 from flask_session import Session
 import os
@@ -6,7 +9,7 @@ from backend.gitlab_utils import (
     get_trainees,
     get_branches,
     get_files
-)
+)   
 from backend.similarity_checker import compare_similarity
 
 app = Flask(__name__)
@@ -63,10 +66,12 @@ def trainees():
 
 @app.route("/api/branches/<int:project_id>", methods=["GET"])
 def branches(project_id):
+    print(1)
     gl = get_gitlab_instance()
+    print(gl)
     if not gl:
         return jsonify({"error": "GitLab not initialized"}), 400
-
+    print(2)
     return jsonify(get_branches(gl, project_id))
 
 
@@ -80,11 +85,19 @@ def files(project_id, branch):
 
 @app.route("/api/save-config", methods=["POST"])
 def similarity():
+    print('new 1')
     gl = get_gitlab_instance()
+    print('new 2')
     if not gl:
         return jsonify({"error": "GitLab not initialized"}), 400
-
-    config = request.get_json()
+    print('new 3')
+    print(request)
+    config = request.get_json(silent=True)
+    if config is None:
+        print('Invalid or missing JSON payload')
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+    print('new 4')
+    print(config)
     return jsonify(compare_similarity(gl, config))
 
 
